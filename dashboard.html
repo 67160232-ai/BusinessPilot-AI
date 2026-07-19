@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>BusinessPilot AI | Dashboard</title>
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Icons -->
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+<!-- Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+rel="stylesheet">
+
+
+<!-- Dashboard CSS -->
+
+<link rel="stylesheet" href="css/dashboard.css">
+
+
+</head>
+
+
+<body>
+
+
+<div class="dashboard-container">
+
+
+<!-- ================= SIDEBAR ================= -->
+
+
+<aside class="sidebar">
+
+
+<div class="logo-area">
+
+
+<div class="logo">
+
+AI
+
+</div>
+
+
+<div>
+
+<h1>
+BusinessPilot
+</h1>
+
+<p>
+AI Platform
+</p>
+
+</div>
+
+
+</div>
+
+
+
+<nav class="menu">
+
+
+<a href="dashboard.html" class="menu-item active">
+
+<i class="fa-solid fa-house"></i>
+
+<span>
+Dashboard
+</span>
+
+</a>
+
+
+
+<a href="upload.html" class="menu-item">
+
+<i class="fa-solid fa-file-arrow-up"></i>
+
+<span>
+Upload Data
+</span>
+
+</a>
+
+
+
+<a href="health.html" class="menu-item">
+
+<i class="fa-solid fa-heart-pulse"></i>
+
+<span>
+Business Health
+</span>
+
+</a>
+
+
+
+<a href="forecast.html" class="menu-item">
+
+<i class="fa-solid fa-chart-line"></i>
+
+<span>
+Forecast
+</span>
+
+</a>
+
+
+
+<a href="scenario.html" class="menu-item">
+
+<i class="fa-solid fa-sliders"></i>
+
+<span>
+Scenario
+</span>
+
+</a>
+
+
+
+<a href="recommendation.html" class="menu-item">
+
+<i class="fa-solid fa-robot"></i>
+
+<span>
+AI Recommendation
+</span>
+
+</a>
+
+
+
+<a href="report.html" class="menu-item">
+
+<i class="fa-solid fa-file-lines"></i>
+
+<span>
+Reports
+</span>
+
+</a>
+
+
+
+<a href="notification.html" class="menu-item">
+
+<i class="fa-solid fa-bell"></i>
+
+<span>
+Notifications
+</span>
+
+</a>
+
+
+
+<a href="settings.html" class="menu-item">
+
+<i class="fa-solid fa-gear"></i>
+
+<span>
+Settings
+</span>
+
+</a>
+
+
+</nav>
+
+
+
+<div class="logout">
+
+
+<a href="login.html">
+
+<i class="fa-solid fa-right-from-bracket"></i>
+
+Logout
+
+</a>
+
+
+</div>
+
+
+</aside>
+
+
+
+
+
+<!-- ================= MAIN ================= -->
+
+
+<main class="main-content">
+
+
+
+<!-- TOP BAR -->
+
+
+<header class="topbar">
+
+
+<div>
+
+
+<h2>
+Welcome Back 👋
+</h2>
+
+
+<p>
+Here is your business overview today
+</p>
+
+
+</div>
+
+
+
+<div class="top-actions">
+
+
+<div class="search">
+
+
+<i class="fa-solid fa-search"></i>
+
+
+<input 
+type="text"
+placeholder="Search...">
+
+
+</div>
+
+
+
+<button class="notification-btn">
+
+<i class="fa-solid fa-bell"></i>
+
+<span>
+3
+</span>
+
+</button>
+
+
+
+<div class="profile">
+
+
+<div class="avatar">
+
+JD
+
+</div>
+
+
+<div>
+
+<h4>
+John Doe
+</h4>
+
+<p>
+CEO
+</p>
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</header>
+
+
+
+
+
+<!-- ================= CONTENT START ================= -->
+
+
+<section class="dashboard-content">
+
+
+
+<!-- Health Overview -->
+
+
+<div class="glass health-banner">
+
+
+<div>
+
+
+<p>
+Business Health Score
+</p>
+
+
+<h1>
+87
+<span>
+/100
+</span>
+</h1>
+
+
+</div>
+
+
+
+<div class="status healthy">
+
+<i class="fa-solid fa-circle-check"></i>
+
+Healthy
+
+</div>
+
+
+</div>
+
+
+
+
+<!-- KPI CARDS -->
+
+
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mt-8">
+
+
+
+<div class="glass">
+
+<div class="card-header">
+
+Revenue
+
+<i class="fa-solid fa-chart-line text-cyan-400"></i>
+
+</div>
+
+
+<h2>
+฿1,250,000
+</h2>
+
+
+<p class="positive">
+
+▲ 18% from last month
+
+</p>
+
+
+</div>
+
+
+
+
+<div class="glass">
+
+
+<div class="card-header">
+
+Expense
+
+<i class="fa-solid fa-wallet text-red-400"></i>
+
+</div>
+
+
+<h2>
+฿820,000
+</h2>
+
+
+<p class="negative">
+
+▼ 6% from last month
+
+</p>
+
+
+</div>
+
+
+
+
+
+<div class="glass">
+
+
+<div class="card-header">
+
+Profit
+
+<i class="fa-solid fa-coins text-yellow-400"></i>
+
+</div>
+
+
+<h2>
+฿430,000
+</h2>
+
+
+<p class="positive">
+
+Healthy Growth
+
+</p>
+
+
+</div>
+
+
+
+
+
+<div class="glass">
+
+
+<div class="card-header">
+
+Cash Runway
+
+<i class="fa-solid fa-clock text-purple-400"></i>
+
+</div>
+
+
+<h2>
+6 Months
+</h2>
+
+
+<p class="warning">
+
+Need Monitoring
+
+</p>
+
+
+</div>
+
+
+</div>
+
+
+
+<!-- Part 2 Continue Here -->
+
+
+
+</section>
+
+
+</main>
+
+
+</div>
+
+
+<script src="js/dashboard.js"></script>
+
+
+</body>
+
+</html>

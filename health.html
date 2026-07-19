@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>BusinessPilot AI | Business Health</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+rel="stylesheet">
+
+<link rel="stylesheet" href="css/dashboard.css">
+<link rel="stylesheet" href="css/health.css">
+
+</head>
+
+<body>
+
+<div class="dashboard-container">
+
+<!-- Sidebar -->
+
+<aside class="sidebar">
+
+<div class="logo-area">
+
+<div class="logo">AI</div>
+
+<div>
+
+<h1>BusinessPilot</h1>
+
+<p>AI Platform</p>
+
+</div>
+
+</div>
+
+<nav class="menu">
+
+<a href="dashboard.html" class="menu-item">
+<i class="fa-solid fa-house"></i>
+<span>Dashboard</span>
+</a>
+
+<a href="upload.html" class="menu-item">
+<i class="fa-solid fa-file-arrow-up"></i>
+<span>Upload Data</span>
+</a>
+
+<a href="health.html" class="menu-item active">
+<i class="fa-solid fa-heart-pulse"></i>
+<span>Business Health</span>
+</a>
+
+<a href="forecast.html" class="menu-item">
+<i class="fa-solid fa-chart-line"></i>
+<span>Forecast</span>
+</a>
+
+<a href="scenario.html" class="menu-item">
+<i class="fa-solid fa-sliders"></i>
+<span>Scenario</span>
+</a>
+
+<a href="recommendation.html" class="menu-item">
+<i class="fa-solid fa-robot"></i>
+<span>AI Recommendation</span>
+</a>
+
+<a href="report.html" class="menu-item">
+<i class="fa-solid fa-file-lines"></i>
+<span>Reports</span>
+</a>
+
+<a href="notification.html" class="menu-item">
+<i class="fa-solid fa-bell"></i>
+<span>Notifications</span>
+</a>
+
+<a href="settings.html" class="menu-item">
+<i class="fa-solid fa-gear"></i>
+<span>Settings</span>
+</a>
+
+</nav>
+
+<div class="logout">
+
+<a href="login.html">
+
+<i class="fa-solid fa-right-from-bracket"></i>
+
+Logout
+
+</a>
+
+</div>
+
+</aside>
+
+<!-- Main -->
+
+<main class="main-content">
+
+<header class="topbar">
+
+<div>
+
+<h2>Business Health Analysis</h2>
+
+<p>AI-powered financial and operational analysis</p>
+
+</div>
+
+</header>
+
+<!-- ================= Score ================= -->
+
+<div class="health-grid mt-8">
+
+<div class="glass score-card">
+
+<h3>Business Health Score</h3>
+
+<div class="score-circle">
+
+<div class="score-value">
+
+87
+
+<span>/100</span>
+
+</div>
+
+</div>
+
+<div class="health-status">
+
+<i class="fa-solid fa-circle-check"></i>
+
+Healthy Business
+
+</div>
+
+<p class="score-description">
+
+Your business is performing well with stable revenue growth,
+healthy cash flow and manageable operating costs.
+
+</p>
+
+</div>
+
+<div class="glass ai-card">
+
+<h3>AI Summary</h3>
+
+<ul>
+
+<li>
+✅ Revenue increased by 18%
+</li>
+
+<li>
+💰 Cash flow remains positive
+</li>
+
+<li>
+📈 Profit margin continues improving
+</li>
+
+<li>
+⚠ Marketing expenses are higher than average
+</li>
+
+<li>
+🤖 AI confidence level : 96%
+</li>
+
+</ul>
+
+</div>
+
+</div>
+
+<!-- ================= KPI ================= -->
+
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mt-8">
+
+<div class="glass">
+
+<p>Total Revenue</p>
+
+<h2>฿1,250,000</h2>
+
+<span class="positive">
++18%
+</span>
+
+</div>
+
+<div class="glass">
+
+<p>Total Expense</p>
+
+<h2>฿820,000</h2>
+
+<span class="negative">
+-6%
+</span>
+
+</div>
+
+<div class="glass">
+
+<p>Net Profit</p>
+
+<h2>฿430,000</h2>
+
+<span class="positive">
+Healthy
+</span>
+
+</div>
+
+<div class="glass">
+
+<p>Cash Runway</p>
+
+<h2>6 Months</h2>
+
+<span class="warning">
+Monitor
+</span>
+
+</div>
+
+</div>
+
+<!-- Part 2 Continue Here -->
+
+</main>
+
+</div>
+
+<script src="js/health.js"></script>
+
+</body>
+
+</html>
