@@ -2,22 +2,23 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
 
     <title>BusinessPilot AI | Login</title>
 
-    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Font Awesome -->
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
-    <!-- Google Font -->
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
+
 
     <style>
 
@@ -26,89 +27,148 @@
         }
 
         body {
+
             background: #020617;
+
             color: white;
+
             overflow: hidden;
+
         }
 
         body::before {
+
             content: "";
+
             position: fixed;
+
             width: 700px;
+
             height: 700px;
-            background: radial-gradient(
-                circle,
-                #06b6d455,
-                transparent
-            );
+
+            background:
+                radial-gradient(
+                    circle,
+                    #06b6d455,
+                    transparent
+                );
+
             top: -250px;
+
             left: -250px;
+
+            pointer-events: none;
+
         }
 
         body::after {
+
             content: "";
+
             position: fixed;
+
             width: 700px;
+
             height: 700px;
-            background: radial-gradient(
-                circle,
-                #2563eb44,
-                transparent
-            );
+
+            background:
+                radial-gradient(
+                    circle,
+                    #2563eb44,
+                    transparent
+                );
+
             bottom: -250px;
+
             right: -250px;
+
+            pointer-events: none;
+
         }
 
         .glass {
-            background: rgba(255,255,255,.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,.08);
+
+            background:
+                rgba(255,255,255,.05);
+
+            backdrop-filter:
+                blur(20px);
+
+            border:
+                1px solid
+                rgba(255,255,255,.08);
+
         }
 
         .login-card {
-            animation: fade .7s ease;
+
+            animation:
+                fade .7s ease;
+
         }
 
         @keyframes fade {
 
             from {
+
                 opacity: 0;
-                transform: translateY(40px);
+
+                transform:
+                    translateY(40px);
+
             }
 
             to {
+
                 opacity: 1;
-                transform: translateY(0);
+
+                transform:
+                    translateY(0);
+
             }
 
         }
 
         .btn {
-            background: linear-gradient(
-                90deg,
-                #06b6d4,
-                #2563eb
-            );
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #06b6d4,
+                    #2563eb
+                );
 
             transition: .35s;
+
         }
 
         .btn:hover {
-            transform: translateY(-3px);
+
+            transform:
+                translateY(-3px);
+
             box-shadow:
                 0 15px 30px
                 rgba(6,182,212,.35);
+
         }
 
         .btn:disabled {
+
             opacity: .6;
+
             cursor: not-allowed;
+
             transform: none;
+
             box-shadow: none;
+
         }
 
         input {
+
             background: #0f172a;
+
         }
 
     </style>
@@ -118,9 +178,14 @@
 
 <body>
 
-<div class="min-h-screen flex items-center justify-center p-6">
 
-    <div class="login-card glass rounded-3xl w-full max-w-md p-10">
+<div
+    class="min-h-screen flex items-center justify-center p-6">
+
+
+    <div
+        class="login-card glass rounded-3xl w-full max-w-md p-10">
+
 
         <!-- LOGO -->
 
@@ -136,12 +201,20 @@
 
             </div>
 
-            <h1 class="text-3xl font-bold mt-6">
+
+            <h1
+                class="text-3xl font-bold mt-6">
+
                 BusinessPilot AI
+
             </h1>
 
-            <p class="text-gray-400 mt-2">
+
+            <p
+                class="text-gray-400 mt-2">
+
                 Sign in to continue
+
             </p>
 
         </div>
@@ -149,17 +222,26 @@
 
         <!-- LOGIN FORM -->
 
-        <form id="loginForm" class="mt-10">
+        <form
+            id="loginForm"
+            class="mt-10">
+
 
             <!-- Username -->
 
             <div>
 
-                <label class="text-sm text-gray-300">
+                <label
+                    class="text-sm text-gray-300">
+
                     Username
+
                 </label>
 
-                <div class="relative mt-2">
+
+                <div
+                    class="relative mt-2">
+
 
                     <i
                         class="fa-solid fa-user
@@ -167,6 +249,7 @@
                         -translate-y-1/2
                         text-gray-500">
                     </i>
+
 
                     <input
                         id="username"
@@ -184,15 +267,21 @@
             </div>
 
 
-            <!-- PASSWORD -->
+            <!-- Password -->
 
             <div class="mt-6">
 
-                <label class="text-sm text-gray-300">
+                <label
+                    class="text-sm text-gray-300">
+
                     Password
+
                 </label>
 
-                <div class="relative mt-2">
+
+                <div
+                    class="relative mt-2">
+
 
                     <i
                         class="fa-solid fa-lock
@@ -200,6 +289,7 @@
                         -translate-y-1/2
                         text-gray-500">
                     </i>
+
 
                     <input
                         id="password"
@@ -212,6 +302,7 @@
                         focus:border-cyan-400
                         outline-none">
 
+
                     <button
                         type="button"
                         id="togglePassword"
@@ -219,7 +310,9 @@
                         -translate-y-1/2
                         text-gray-400">
 
-                        <i class="fa-solid fa-eye"></i>
+                        <i
+                            class="fa-solid fa-eye">
+                        </i>
 
                     </button>
 
@@ -228,23 +321,29 @@
             </div>
 
 
-            <!-- REMEMBER -->
+            <!-- Remember -->
 
             <div
                 class="flex items-center justify-between
                 mt-6 text-sm">
 
+
                 <label
                     class="flex items-center gap-2
                     cursor-pointer">
+
 
                     <input
                         id="rememberMe"
                         type="checkbox"
                         class="accent-cyan-500">
 
-                    <span class="text-gray-400">
+
+                    <span
+                        class="text-gray-400">
+
                         Remember me
+
                     </span>
 
                 </label>
@@ -270,6 +369,7 @@
                 class="btn w-full py-4 rounded-xl
                 mt-8 font-semibold text-lg">
 
+
                 <i
                     class="fa-solid fa-right-to-bracket mr-2">
                 </i>
@@ -286,7 +386,6 @@
                 class="text-center
                 text-sm mt-4
                 text-gray-400">
-
             </p>
 
 
@@ -324,6 +423,7 @@
                 hover:bg-slate-800
                 transition">
 
+
                 <i
                     class="fa-brands fa-google mr-2">
                 </i>
@@ -339,7 +439,9 @@
                 class="text-center
                 text-gray-400 mt-8">
 
+
                 Don't have an account?
+
 
                 <a
                     href="register.html"
@@ -362,40 +464,75 @@
 
 <script>
 
+
 /* =========================================
    BUSINESSPILOT API
 ========================================= */
 
 const API_URL =
-    window.BUSINESSPILOT_API_URL ||
-    localStorage.getItem("api_url") ||
-    "http://127.0.0.1:8000";
+    "https://businesspilot-ai-backend.onrender.com";
+
+
+/* =========================================
+   ELEMENTS
+========================================= */
+
+const loginForm =
+    document.getElementById(
+        "loginForm"
+    );
+
+const username =
+    document.getElementById(
+        "username"
+    );
+
+const password =
+    document.getElementById(
+        "password"
+    );
+
+const togglePassword =
+    document.getElementById(
+        "togglePassword"
+    );
+
+const loginButton =
+    document.getElementById(
+        "loginButton"
+    );
+
+const loginStatus =
+    document.getElementById(
+        "loginStatus"
+    );
 
 
 /* =========================================
    PASSWORD SHOW / HIDE
 ========================================= */
 
-const password =
-    document.getElementById("password");
-
-const togglePassword =
-    document.getElementById("togglePassword");
-
 togglePassword.addEventListener(
     "click",
-    () => {
+    function () {
 
-        if (password.type === "password") {
+        if (
+            password.type ===
+            "password"
+        ) {
 
-            password.type = "text";
+            password.type =
+                "text";
 
             togglePassword.innerHTML =
                 '<i class="fa-solid fa-eye-slash"></i>';
 
-        } else {
+        }
 
-            password.type = "password";
+        else {
+
+            password.type =
+                "password";
 
             togglePassword.innerHTML =
                 '<i class="fa-solid fa-eye"></i>';
@@ -410,54 +547,60 @@ togglePassword.addEventListener(
    LOGIN
 ========================================= */
 
-document
-    .getElementById("loginForm")
-    .addEventListener("submit", async function (event) {
+loginForm.addEventListener(
+    "submit",
+    async function (event) {
 
         event.preventDefault();
 
-        const username =
-            document
-                .getElementById("username")
-                .value
-                .trim();
 
-        const password =
-            document
-                .getElementById("password")
-                .value;
+        const usernameValue =
+            username.value.trim();
 
-        const rememberMe =
-            document
-                .getElementById("rememberMe")
-                .checked;
-
-        const button =
-            document
-                .getElementById("loginButton");
-
-        const status =
-            document
-                .getElementById("loginStatus");
+        const passwordValue =
+            password.value;
 
 
-        if (!username || !password) {
+        /* Check input */
 
-            status.textContent =
+        if (
+            !usernameValue ||
+            !passwordValue
+        ) {
+
+            loginStatus.textContent =
                 "กรุณากรอก Username และ Password";
+
+            loginStatus.className =
+                "text-center text-sm mt-4 text-red-400";
 
             return;
 
         }
 
 
-        button.disabled = true;
+        /* Disable button */
 
-        status.textContent =
+        loginButton.disabled =
+            true;
+
+        loginButton.innerHTML =
+            '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Signing In...';
+
+
+        loginStatus.textContent =
             "กำลังเข้าสู่ระบบ...";
+
+        loginStatus.className =
+            "text-center text-sm mt-4 text-cyan-400";
 
 
         try {
+
+
+            /* =================================
+               CALL RENDER BACKEND
+            ================================= */
 
             const response =
                 await fetch(
@@ -467,18 +610,28 @@ document
                         method: "POST",
 
                         headers: {
+
                             "Content-Type":
                                 "application/json"
+
                         },
 
-                        body: JSON.stringify({
-                            username: username,
-                            password: password
-                        })
+                        body:
+                            JSON.stringify({
+
+                                username:
+                                    usernameValue,
+
+                                password:
+                                    passwordValue
+
+                            })
 
                     }
                 );
 
+
+            /* Get response */
 
             let result = {};
 
@@ -487,28 +640,66 @@ document
                 result =
                     await response.json();
 
-            } catch (_) {
+            }
+
+            catch (error) {
 
                 result = {};
 
             }
 
 
+            /* =================================
+               ERROR
+            ================================= */
+
             if (!response.ok) {
 
+                let message =
+                    "Username หรือ Password ไม่ถูกต้อง";
+
+
+                if (
+                    typeof result.detail ===
+                    "string"
+                ) {
+
+                    message =
+                        result.detail;
+
+                }
+
+                else if (
+                    Array.isArray(
+                        result.detail
+                    )
+                ) {
+
+                    message =
+                        result.detail
+                            .map(
+                                item =>
+                                    item.msg || ""
+                            )
+                            .join(", ");
+
+                }
+
+
                 throw new Error(
-                    result.detail ||
-                    "Username หรือ Password ไม่ถูกต้อง"
+                    message
                 );
 
             }
 
 
-            /* =========================
-               SAVE TOKEN
-            ========================= */
+            /* =================================
+               TOKEN
+            ================================= */
 
-            if (!result.access_token) {
+            if (
+                !result.access_token
+            ) {
 
                 throw new Error(
                     "Backend ไม่ได้ส่ง access_token กลับมา"
@@ -523,23 +714,25 @@ document
             );
 
 
-            /* =========================
-               SAVE USER
-            ========================= */
+            /* =================================
+               USER
+            ================================= */
 
             if (result.user) {
 
                 localStorage.setItem(
                     "user",
-                    JSON.stringify(result.user)
+                    JSON.stringify(
+                        result.user
+                    )
                 );
 
             }
 
 
-            /* =========================
-               SAVE API URL
-            ========================= */
+            /* =================================
+               API URL
+            ================================= */
 
             localStorage.setItem(
                 "api_url",
@@ -547,19 +740,36 @@ document
             );
 
 
-            status.textContent =
-                "เข้าสู่ระบบสำเร็จ";
+            /* =================================
+               SUCCESS
+            ================================= */
+
+            loginStatus.textContent =
+                "เข้าสู่ระบบสำเร็จ!";
+
+            loginStatus.className =
+                "text-center text-sm mt-4 text-green-400";
 
 
-            /* =========================
-               GO UPLOAD
-            ========================= */
+            /* =================================
+               GO TO UPLOAD
+            ================================= */
 
-            window.location.href =
-                "upload.html";
+            setTimeout(
+                function () {
+
+                    window.location.href =
+                        "upload.html";
+
+                },
+                500
+            );
 
 
-        } catch (error) {
+        }
+
+        catch (error) {
+
 
             console.error(
                 "LOGIN ERROR:",
@@ -570,27 +780,42 @@ document
             if (
                 error.message
                     .toLowerCase()
-                    .includes("failed to fetch")
+                    .includes(
+                        "failed to fetch"
+                    )
             ) {
 
-                status.textContent =
+                loginStatus.textContent =
                     "ไม่สามารถเชื่อมต่อ Backend ได้";
 
-            } else {
+            }
 
-                status.textContent =
+            else {
+
+                loginStatus.textContent =
                     error.message;
 
             }
 
 
-            button.disabled = false;
+            loginStatus.className =
+                "text-center text-sm mt-4 text-red-400";
+
+
+            loginButton.disabled =
+                false;
+
+
+            loginButton.innerHTML =
+                '<i class="fa-solid fa-right-to-bracket mr-2"></i> Sign In';
 
         }
 
-    });
+    }
+);
 
 </script>
 
 </body>
+
 </html>
