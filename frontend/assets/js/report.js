@@ -47,6 +47,7 @@
         try {
             const raw = localStorage.getItem("user");
             if (raw) currentUser = JSON.parse(raw);
+            localStorage.removeItem("report_recipient_email");
             const nameEl = document.getElementById("profileName");
             if (nameEl && currentUser.username) nameEl.textContent = currentUser.username;
         } catch (_) {}
@@ -352,37 +353,60 @@
     // Email Report Summary
     async function emailReportSummary() {
         const btn = document.getElementById("emailReportBtn");
-        const recipient = currentUser.email || localStorage.getItem("alert_email") || "owner@businesspilot.ai";
+        const recipient = document.getElementById("reportRecipientEmail")?.value.trim();
+        if (!rawAnalysis) {
+            showToast("ยังไม่มีข้อมูลรายงาน กรุณาอัปโหลดและวิเคราะห์ข้อมูลก่อน");
+            return;
+        }
+        if (!recipient || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient)) {
+            showToast("กรุณากรอกอีเมลผู้รับให้ถูกต้อง");
+            document.getElementById("reportRecipientEmail")?.focus();
+            return;
+        }
 
         if (btn) {
             btn.disabled = true;
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> กำลังส่ง...`;
         }
 
-        const fin = rawAnalysis?.financial || {};
+        const fin = rawAnalysis.financial || {};
+        const cash = rawAnalysis.cash_flow || {};
+        const trends = rawAnalysis.trends || {};
+        const health = rawAnalysis.business_health || {};
+        const totalRevenue = Number(fin.total_revenue || 0);
+        const totalExpense = Number(fin.total_expense || 0);
+        const netProfit = Number(fin.profit_loss ?? totalRevenue - totalExpense);
         const payload = {
             email: recipient,
-            subject: `[BusinessPilot Report] สรุปรายงานการเงินและสุขภาพธุรกิจฉบับผู้บริหาร`,
-            notifications: [
-                { title: "รายรับรวม", message: formatBaht(fin.total_revenue || 0), level: "info" },
-                { title: "ค่าใช้จ่ายรวม", message: formatBaht(fin.total_expense || 0), level: "info" },
-                { title: "กำไร/ขาดทุนสุทธิ", message: formatBaht(fin.profit_loss || 0), level: fin.profit_loss >= 0 ? "info" : "danger" },
-                { title: "ระยะเวลาเงินสด", message: `${rawAnalysis?.cash_flow?.cash_runway_months || 'N/A'} เดือน`, level: "warn" }
-            ],
-            business_status: rawAnalysis?.business_health?.status || "Normal",
-            health_score: rawAnalysis?.business_health?.score || 0
+            subject: `[BusinessPilot] สรุปภาพรวมธุรกิจสำหรับผู้บริหาร`,
+            dataset_name: localStorage.getItem("uploaded_filename") || rawAnalysis.filename || "ชุดข้อมูลธุรกิจ",
+            period: Array.isArray(rawAnalysis.timeline) && rawAnalysis.timeline.length
+                ? `${rawAnalysis.timeline[0].month} ถึง ${rawAnalysis.timeline[rawAnalysis.timeline.length - 1].month}` : "ช่วงข้อมูลทั้งหมด",
+            total_revenue: totalRevenue,
+            total_expense: totalExpense,
+            net_profit: netProfit,
+            profit_margin_percent: Number(fin.profit_margin_percent ?? (totalRevenue ? netProfit / totalRevenue * 100 : 0)),
+            monthly_burn_rate: Number(cash.monthly_burn_rate || 0),
+            cash_runway_months: Number.isFinite(Number(cash.cash_runway_months)) ? Number(cash.cash_runway_months) : null,
+            revenue_change_percent: Number(trends.revenue_change_percent || 0),
+            expense_change_percent: Number(trends.expense_change_percent || 0),
+            business_status: health.status || "ยังไม่มีสถานะ",
+            health_score: Number(health.score || 0),
+            recommendations: (Array.isArray(rawAnalysis.recommendations) ? rawAnalysis.recommendations : []).map(r => typeof r === "string" ? r : r.message || "").filter(Boolean).slice(0, 5)
         };
 
         try {
-            const resp = await fetch(`${API_URL}/send-notification-email`, {
+            const resp = await fetch(`${API_URL}/send-report-email`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
                 body: JSON.stringify(payload)
             });
             const data = await resp.json().catch(() => ({}));
-            showToast(`✅ ส่งรายงานสรุปไปยัง ${recipient} สำเร็จ`);
-        } catch (_) {
-            showToast(`📧 ส่งรายงานสรุปไปยัง ${recipient} สำเร็จแล้ว`);
+            if (!resp.ok || data.delivery_status !== "sent") throw new Error(data.detail || data.message || "ระบบยังส่งอีเมลไม่สำเร็จ");
+            localStorage.setItem("alert_email", recipient);
+            showToast(`ส่งรายงานถึง ${recipient} สำเร็จแล้ว`);
+        } catch (err) {
+            showToast(`ส่งไม่สำเร็จ: ${err.message || "ตรวจสอบการเชื่อมต่อและการตั้งค่าอีเมล"}`);
         } finally {
             if (btn) {
                 btn.disabled = false;

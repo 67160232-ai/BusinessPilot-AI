@@ -315,7 +315,7 @@
             });
 
             const data = await resp.json().catch(() => ({}));
-            if (!resp.ok) throw new Error(data.detail || "ไม่สามารถส่งอีเมลได้");
+            if (!resp.ok || data.delivery_status !== "sent") throw new Error(data.detail || data.message || "ระบบยังส่งอีเมลไม่สำเร็จ");
 
             // Save to dispatch history
             saveEmailHistory(recipient, notifs.length, data.delivery_status || "sent");
@@ -323,9 +323,8 @@
             showToast(`✅ ${data.message || `ส่งอีเมลแจ้งเตือนไปยัง ${recipient} สำเร็จ!`}`);
         } catch (err) {
             console.error("Email send error", err);
-            // Fallback simulated success
-            saveEmailHistory(recipient, notifs.length, "queued");
-            showToast(`📧 ส่งข้อมูลการแจ้งเตือนไปยัง ${recipient} สำเร็จแล้ว`);
+            saveEmailHistory(recipient, notifs.length, "failed");
+            showToast(`ส่งไม่สำเร็จ: ${err.message || "ตรวจสอบการเชื่อมต่อและการตั้งค่าอีเมล"}`);
         } finally {
             if (btn) {
                 btn.disabled = false;

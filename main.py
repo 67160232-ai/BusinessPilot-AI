@@ -12,10 +12,15 @@ import os
 import shutil
 import uuid
 import json
+import html
+import re
+import smtplib
+from email.message import EmailMessage
 import urllib.request
 import urllib.error
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
+from dotenv import load_dotenv
 
 
 # ==========================================
@@ -42,6 +47,7 @@ app.add_middleware(
 # ==========================================
 
 BASE_DIR = Path(__file__).resolve().parent
+load_dotenv(BASE_DIR / ".env")
 FRONTEND_DIR = BASE_DIR / "frontend"
 FRONTEND_PAGES_DIR = FRONTEND_DIR / "pages"
 app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIR / "assets")), name="frontend-assets")
@@ -1806,6 +1812,102 @@ class EmailNotificationRequest(BaseModel):
     health_score: float | int | None = None
 
 
+class ExecutiveReportEmailRequest(BaseModel):
+    email: str
+    subject: str = "สรุปภาพรวมธุรกิจสำหรับผู้บริหาร | BusinessPilot"
+    dataset_name: str = "ชุดข้อมูลธุรกิจ"
+    period: str = "ช่วงข้อมูลทั้งหมด"
+    total_revenue: float = 0
+    total_expense: float = 0
+    net_profit: float = 0
+    profit_margin_percent: float = 0
+    monthly_burn_rate: float = 0
+    cash_runway_months: float | None = None
+    revenue_change_percent: float = 0
+    expense_change_percent: float = 0
+    business_status: str = "ยังไม่มีสถานะ"
+    health_score: float = 0
+    recommendations: list[str] = []
+
+
+@app.post("/send-report-email")
+def send_executive_report_email(
+    payload: ExecutiveReportEmailRequest,
+    current_user=Depends(get_current_user)
+):
+    recipient = payload.email.strip()
+    if not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", recipient):
+        raise HTTPException(status_code=400, detail="กรุณาระบุอีเมลผู้รับให้ถูกต้อง")
+
+    smtp_host = os.getenv("SMTP_HOST", "").strip()
+    smtp_user = os.getenv("SMTP_USER", "").strip()
+    smtp_password = os.getenv("SMTP_PASSWORD", "").strip()
+    if not smtp_host or not smtp_user or not smtp_password:
+        raise HTTPException(status_code=503, detail="ยังไม่ได้ตั้งค่า SMTP จึงยังส่งอีเมลจริงไม่ได้ กรุณาตั้งค่า SMTP_HOST, SMTP_USER และ SMTP_PASSWORD")
+
+    def money(value):
+        return f"฿{value:,.0f}"
+
+    profit_label = "กำไรสุทธิ" if payload.net_profit >= 0 else "ขาดทุนสุทธิ"
+    runway = f"{payload.cash_runway_months:.1f} เดือน" if payload.cash_runway_months is not None else "ไม่ระบุ / กระแสเงินสดเป็นบวก"
+    recommendations = [str(item).strip()[:500] for item in payload.recommendations[:5] if str(item).strip()]
+    rec_plain = "\n".join(f"• {item}" for item in recommendations) or "• ไม่มีข้อเสนอแนะเพิ่มเติม"
+    rec_html = "".join(f"<li style=\"margin:8px 0\">{html.escape(item)}</li>" for item in recommendations) or "<li>ไม่มีข้อเสนอแนะเพิ่มเติม</li>"
+    values = {
+        "dataset": html.escape(payload.dataset_name[:200]),
+        "period": html.escape(payload.period[:100]),
+        "status": html.escape(payload.business_status[:100]),
+        "health": f"{payload.health_score:g}/100",
+        "revenue": money(payload.total_revenue),
+        "expense": money(payload.total_expense),
+        "profit_label": profit_label,
+        "profit": money(abs(payload.net_profit)),
+        "margin": f"{payload.profit_margin_percent:.1f}%",
+        "burn": money(payload.monthly_burn_rate),
+        "runway": runway,
+        "rev_trend": f"{payload.revenue_change_percent:+.1f}%",
+        "exp_trend": f"{payload.expense_change_percent:+.1f}%",
+    }
+    plain = (
+        "สรุปภาพรวมธุรกิจสำหรับผู้บริหาร\n"
+        f"ชุดข้อมูล: {payload.dataset_name}\nช่วงเวลา: {payload.period}\nสถานะ: {payload.business_status} | คะแนนสุขภาพ {values['health']}\n\n"
+        f"รายรับรวม: {values['revenue']}\nค่าใช้จ่ายรวม: {values['expense']}\n{profit_label}: {values['profit']}\n"
+        f"อัตรากำไรสุทธิ: {values['margin']}\nแนวโน้มรายรับ: {values['rev_trend']} | แนวโน้มค่าใช้จ่าย: {values['exp_trend']}\n"
+        f"อัตราใช้เงินสดต่อเดือน: {values['burn']}\nเงินสดรองรับได้: {values['runway']}\n\nข้อเสนอแนะสำคัญ\n{rec_plain}\n\nจัดทำโดย BusinessPilot AI"
+    )
+    profit_color = "#059669" if payload.net_profit >= 0 else "#dc2626"
+    html_body = f"""<!doctype html><html><body style="margin:0;background:#f1f5f9;font-family:Arial,'Noto Sans Thai',sans-serif;color:#0f172a">
+    <div style="max-width:680px;margin:24px auto;background:#fff;border-radius:14px;overflow:hidden">
+      <div style="background:#0f172a;color:#fff;padding:26px 30px"><div style="font-size:13px;color:#67e8f9">BUSINESSPILOT AI · EXECUTIVE BRIEF</div><h1 style="font-size:22px;margin:10px 0">สรุปภาพรวมธุรกิจสำหรับผู้บริหาร</h1><div style="color:#cbd5e1">{values['dataset']} · {values['period']}</div></div>
+      <div style="padding:24px 30px"><div style="padding:14px;background:#ecfeff;border-radius:10px;margin-bottom:18px"><b>สถานะธุรกิจ:</b> {values['status']} &nbsp; <b>คะแนนสุขภาพ:</b> {values['health']}</div>
+      <table style="border-collapse:collapse;width:100%"><tr><td style="padding:12px;border-bottom:1px solid #e2e8f0">รายรับรวม</td><td style="padding:12px;border-bottom:1px solid #e2e8f0;text-align:right"><b>{values['revenue']}</b></td></tr>
+      <tr><td style="padding:12px;border-bottom:1px solid #e2e8f0">ค่าใช้จ่ายรวม</td><td style="padding:12px;border-bottom:1px solid #e2e8f0;text-align:right"><b>{values['expense']}</b></td></tr>
+      <tr><td style="padding:12px;border-bottom:1px solid #e2e8f0">{profit_label}</td><td style="padding:12px;border-bottom:1px solid #e2e8f0;text-align:right;color:{profit_color}"><b>{values['profit']}</b></td></tr>
+      <tr><td style="padding:12px;border-bottom:1px solid #e2e8f0">อัตรากำไรสุทธิ</td><td style="padding:12px;border-bottom:1px solid #e2e8f0;text-align:right">{values['margin']}</td></tr>
+      <tr><td style="padding:12px;border-bottom:1px solid #e2e8f0">แนวโน้มรายรับ / ค่าใช้จ่าย</td><td style="padding:12px;border-bottom:1px solid #e2e8f0;text-align:right">{values['rev_trend']} / {values['exp_trend']}</td></tr>
+      <tr><td style="padding:12px;border-bottom:1px solid #e2e8f0">อัตราใช้เงินสดต่อเดือน</td><td style="padding:12px;border-bottom:1px solid #e2e8f0;text-align:right">{values['burn']}</td></tr>
+      <tr><td style="padding:12px">เงินสดรองรับได้</td><td style="padding:12px;text-align:right">{values['runway']}</td></tr></table>
+      <h2 style="font-size:17px;margin:24px 0 8px">ข้อเสนอแนะสำคัญ</h2><ul style="padding-left:22px;line-height:1.6">{rec_html}</ul>
+      <p style="font-size:12px;color:#64748b;border-top:1px solid #e2e8f0;padding-top:16px;margin-top:24px">รายงานนี้จัดทำจากข้อมูลที่อัปโหลด โปรดใช้ประกอบการพิจารณาร่วมกับข้อมูลบัญชีจริง</p></div></div></body></html>"""
+
+    message = EmailMessage()
+    message["Subject"] = payload.subject[:180]
+    message["From"] = os.getenv("SMTP_FROM", smtp_user).strip()
+    message["To"] = recipient
+    message.set_content(plain)
+    message.add_alternative(html_body, subtype="html")
+    try:
+        with smtplib.SMTP(smtp_host, int(os.getenv("SMTP_PORT", "587")), timeout=20) as server:
+            server.starttls()
+            server.login(smtp_user, smtp_password)
+            server.send_message(message)
+    except Exception as exc:
+        print(f"Report email delivery failed: {type(exc).__name__}: {exc}")
+        raise HTTPException(status_code=502, detail="ส่งอีเมลไม่สำเร็จ กรุณาตรวจสอบการตั้งค่า SMTP หรืออีเมลผู้รับ")
+
+    return {"success": True, "recipient": recipient, "delivery_status": "sent", "message": "ส่งรายงานผู้บริหารสำเร็จแล้ว", "timestamp": datetime.now(timezone.utc).isoformat()}
+
+
 @app.post("/send-notification-email")
 def send_notification_email(
     payload: EmailNotificationRequest,
@@ -1882,10 +1984,10 @@ def send_notification_email(
             email_sent = True
             delivery_note = f"ส่งอีเมลแจ้งเตือนไปยัง {recipient} ผ่านเซิร์ฟเวอร์ SMTP สำเร็จแล้ว"
         except Exception as exc:
-            delivery_note = f"เชื่อมต่อ SMTP ขัดข้อง ({exc}); ระบบได้บันทึกการแจ้งเตือนลงประวัติเรียบร้อยแล้ว"
+            print(f"Notification email delivery failed: {type(exc).__name__}: {exc}")
+            raise HTTPException(status_code=502, detail="ส่งอีเมลไม่สำเร็จ กรุณาตรวจสอบการตั้งค่า SMTP หรืออีเมลผู้รับ")
     else:
-        email_sent = True
-        delivery_note = f"ระบบจำลองและเตรียมส่งอีเมลแจ้งเตือนไปยัง {recipient} เรียบร้อยแล้ว (จะส่งจริงทันทีเมื่อกำหนดค่า SMTP ใน .env)"
+        raise HTTPException(status_code=503, detail="ยังไม่ได้ตั้งค่า SMTP จึงยังส่งอีเมลจริงไม่ได้ กรุณาตั้งค่า SMTP_HOST, SMTP_USER และ SMTP_PASSWORD")
 
     return {
         "success": True,
@@ -1927,4 +2029,4 @@ def chat_advisor(
         "answer": result.get("answer", ""),
         "source": result.get("source", "expert_cfo_matrix"),
         "timestamp": datetime.now(timezone.utc).isoformat()
-    }
+    }
