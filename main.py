@@ -23,6 +23,55 @@ from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 
 
+def _deliver_email_via_resend(recipient: str, subject: str, text_body: str, html_body: str) -> bool:
+    """Send email via Sendlib HTTPS API when configured; otherwise use Resend."""
+    sendlib_key = os.getenv("SENDLIB_API_KEY", "").strip()
+    if sendlib_key:
+        sender = os.getenv("SENDLIB_FROM", os.getenv("SMTP_FROM", "")).strip()
+        if not sender:
+            raise HTTPException(status_code=503, detail="ตั้งค่า SENDLIB_FROM เป็น Gmail ที่เชื่อมกับ Sendlib ก่อน")
+        payload = json.dumps({"from": sender, "to": recipient, "subject": subject, "text": text_body, "html": html_body}).encode("utf-8")
+        request = urllib.request.Request(
+            "https://sendlib.samueltuoyo.com/api/send",
+            data=payload,
+            headers={"Authorization": f"Bearer {sendlib_key}", "Content-Type": "application/json", "User-Agent": "BusinessPilotAI/1.0 (email-delivery)", "Accept": "application/json"},
+            method="POST",
+        )
+        provider = "Sendlib"
+    else:
+        api_key = os.getenv("RESEND_API_KEY", "").strip()
+        if not api_key:
+            return False
+        sender = os.getenv("RESEND_FROM", os.getenv("SMTP_FROM", "")).strip()
+        if not sender:
+            raise HTTPException(status_code=503, detail="ตั้งค่า RESEND_FROM ก่อนใช้งาน Resend")
+        payload = json.dumps({"from": sender, "to": [recipient], "subject": subject, "text": text_body, "html": html_body}).encode("utf-8")
+        request = urllib.request.Request(
+            "https://api.resend.com/emails",
+            data=payload,
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json", "User-Agent": "BusinessPilotAI/1.0 (email-delivery)", "Accept": "application/json"},
+            method="POST",
+        )
+        provider = "Resend"
+    try:
+        with urllib.request.urlopen(request, timeout=20) as response:
+            result = json.loads(response.read().decode("utf-8"))
+            accepted = response.status in (200, 201, 202)
+            if provider == "Resend":
+                accepted = accepted and bool(result.get("id"))
+            if not accepted:
+                raise RuntimeError(f"{provider} did not confirm email acceptance")
+            print(f"Email accepted by {provider}: status={response.status}")
+            return True
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")[:500]
+        print(f"{provider} email delivery failed: HTTP {exc.code}: {detail}")
+        raise HTTPException(status_code=502, detail=f"{provider} ปฏิเสธการส่งอีเมล (HTTP {exc.code}); ตรวจสอบ API key และผู้ส่ง")
+    except Exception as exc:
+        print(f"{provider} email delivery failed: {type(exc).__name__}: {exc}")
+        raise HTTPException(status_code=502, detail=f"ส่งอีเมลผ่าน {provider} ไม่สำเร็จ")
+
+
 # ==========================================
 # BusinessPilot AI API
 # ==========================================
@@ -1839,11 +1888,14 @@ def send_executive_report_email(
     if not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", recipient):
         raise HTTPException(status_code=400, detail="กรุณาระบุอีเมลผู้รับให้ถูกต้อง")
 
-    smtp_host = os.getenv("SMTP_HOST", "").strip()
+    sendlib_key = os.getenv("SENDLIB_API_KEY", "").strip()
+    resend_key = os.getenv("RESEND_API_KEY", "").strip()
+    smtp_host = "" if sendlib_key else os.getenv("SMTP_HOST", "").strip()
     smtp_user = os.getenv("SMTP_USER", "").strip()
     smtp_password = os.getenv("SMTP_PASSWORD", "").strip()
-    if not smtp_host or not smtp_user or not smtp_password:
-        raise HTTPException(status_code=503, detail="ยังไม่ได้ตั้งค่า SMTP จึงยังส่งอีเมลจริงไม่ได้ กรุณาตั้งค่า SMTP_HOST, SMTP_USER และ SMTP_PASSWORD")
+    smtp_configured = bool(smtp_host and smtp_user and smtp_password)
+    if not smtp_configured and not (sendlib_key or resend_key):
+        raise HTTPException(status_code=503, detail="ตั้งค่า SMTP_HOST, SMTP_USER, SMTP_PASSWORD หรือ RESEND_API_KEY และ RESEND_FROM ก่อน")
 
     def money(value):
         return f"฿{value:,.0f}"
@@ -1896,14 +1948,17 @@ def send_executive_report_email(
     message["To"] = recipient
     message.set_content(plain)
     message.add_alternative(html_body, subtype="html")
-    try:
-        with smtplib.SMTP(smtp_host, int(os.getenv("SMTP_PORT", "587")), timeout=20) as server:
-            server.starttls()
-            server.login(smtp_user, smtp_password)
-            server.send_message(message)
-    except Exception as exc:
-        print(f"Report email delivery failed: {type(exc).__name__}: {exc}")
-        raise HTTPException(status_code=502, detail="ส่งอีเมลไม่สำเร็จ กรุณาตรวจสอบการตั้งค่า SMTP หรืออีเมลผู้รับ")
+    if smtp_configured:
+        try:
+            with smtplib.SMTP(smtp_host, int(os.getenv("SMTP_PORT", "587")), timeout=20) as server:
+                server.starttls()
+                server.login(smtp_user, smtp_password)
+                server.send_message(message)
+        except Exception as exc:
+            print(f"Report email delivery failed: {type(exc).__name__}: {exc}")
+            raise HTTPException(status_code=502, detail="ส่งอีเมลไม่สำเร็จ กรุณาตรวจสอบการตั้งค่า SMTP หรืออีเมลผู้รับ")
+    else:
+        _deliver_email_via_resend(recipient, payload.subject[:180], plain, html_body)
 
     return {"success": True, "recipient": recipient, "delivery_status": "sent", "message": "ส่งรายงานผู้บริหารสำเร็จแล้ว", "timestamp": datetime.now(timezone.utc).isoformat()}
 
@@ -1923,7 +1978,9 @@ def send_notification_email(
     if not recipient or "@" not in recipient:
         raise HTTPException(status_code=400, detail="Invalid recipient email address")
 
-    smtp_host = os.getenv("SMTP_HOST", "").strip()
+    sendlib_key = os.getenv("SENDLIB_API_KEY", "").strip()
+    resend_key = os.getenv("RESEND_API_KEY", "").strip()
+    smtp_host = "" if sendlib_key else os.getenv("SMTP_HOST", "").strip()
     smtp_port = int(os.getenv("SMTP_PORT", "587"))
     smtp_user = os.getenv("SMTP_USER", "").strip()
     smtp_password = os.getenv("SMTP_PASSWORD", "").strip()
@@ -1986,8 +2043,16 @@ def send_notification_email(
         except Exception as exc:
             print(f"Notification email delivery failed: {type(exc).__name__}: {exc}")
             raise HTTPException(status_code=502, detail="ส่งอีเมลไม่สำเร็จ กรุณาตรวจสอบการตั้งค่า SMTP หรืออีเมลผู้รับ")
+    elif sendlib_key or resend_key:
+        text_body = "รายงานการแจ้งเตือนสุขภาพธุรกิจ\n" + "\n".join(
+            f"- {n.get('title') or n.get('head') or 'การแจ้งเตือน'}: {n.get('message') or n.get('body') or n.get('text') or ''}"
+            for n in payload.notifications
+        )
+        _deliver_email_via_resend(recipient, payload.subject, text_body, html_content)
+        email_sent = True
+        delivery_note = f"ผู้ให้บริการ Resend รับอีเมลแจ้งเตือนสำหรับ {recipient} แล้ว"
     else:
-        raise HTTPException(status_code=503, detail="ยังไม่ได้ตั้งค่า SMTP จึงยังส่งอีเมลจริงไม่ได้ กรุณาตั้งค่า SMTP_HOST, SMTP_USER และ SMTP_PASSWORD")
+        raise HTTPException(status_code=503, detail="ตั้งค่า SMTP_HOST, SMTP_USER, SMTP_PASSWORD หรือ RESEND_API_KEY และ RESEND_FROM ก่อน")
 
     return {
         "success": True,
